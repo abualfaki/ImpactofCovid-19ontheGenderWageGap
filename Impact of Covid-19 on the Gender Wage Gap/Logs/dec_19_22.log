@@ -1,0 +1,65 @@
+--------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/abkmu/Documents/3900/Final Project/F.P/Logs/dec_19_22.log
+  log type:  text
+ opened on:  23 May 2023, 14:10:41
+
+.         
+. 
+.         use "$path/Input/november2019.dta"
+
+. 
+end of do-file
+
+. des IMMIG
+
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+--------------------------------------------------------------------------------------
+IMMIG           byte    %4.0f      IMMIG      Immigration status
+
+. sum IMMIG
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+       IMMIG |     99,297     2.77386    .5314307          1          3
+
+. label list IMMIG
+IMMIG:
+           1 Immigrant, landed 10 or less years earlier
+           2 Immigrant, landed more than 10 years earlier
+           3 Non-immigrant
+
+. label list GENDER
+value label GENDER not found
+r(111);
+
+. label list SEX
+SEX:
+           1 Male
+           2 Female
+
+. do "C:\Users\abkmu\AppData\Local\Temp\STD4a78_000000.tmp"
+
+.         recode SEX (2 = 1 "Female") (1 = 0 "Male") , gen(refemale)
+(99,297 differences between SEX and refemale)
+
+. 
+end of do-file
+
+. label list SCHOOLN
+SCHOOLN:
+           1 Non-student
+           2 Full-time student
+           3 Part-time student
+
+. label list EDUC
+EDUC:
+           0 0 to 8 years
+           1 Some high school
+           2 High school graduate
+           3 Some postsecondary
+           4 Postsecondary certificate or diploma
+           5 Bachelor's degree
+           6 Above bachelor's degree
+

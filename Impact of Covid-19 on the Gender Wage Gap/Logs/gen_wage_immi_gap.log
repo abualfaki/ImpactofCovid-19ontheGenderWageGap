@@ -1,0 +1,601 @@
+------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/abkmu/Documents/3900/Final Project/F.P/Logs/gen_wage_immi_gap.log
+  log type:  text
+ opened on:  30 May 2023, 15:30:56
+
+.         
+. 
+.         use "$path/Input/november2019.dta"
+
+.         
+. 
+.         *****************
+.         * Resrtrictions *
+.         *****************
+.         
+.                 *Drop obsersavation over 65 yrs and unemployed and not in Labour force
+.                 drop if AGE_12 > 10 & (LFSSTAT == 3 | LFSSTAT == 4)
+(19,676 observations deleted)
+
+.                 
+.                 *Drop obsersavationS of people who earn less than $12 dollars an hour
+.                 drop if HRLYEARN < 12 
+(1,369 observations deleted)
+
+.                 
+.                 *account for observations that are not in school
+.                 gen notinschool = 0
+
+.                 replace notinschool = 1 if SCHOOLN == 1
+(65,101 real changes made)
+
+.                 
+.                 *drop observstions that are full-time or part-time students
+.                 drop if notinschool == 0
+(13,151 observations deleted)
+
+.                 drop notinschool
+
+.                 
+.                 drop if COWMAIN != 1 & COWMAIN != 2
+(18,610 observations deleted)
+
+.                 
+. 
+.         *******************************
+.         * Model Independent variables *
+.         *******************************
+.                 ****************
+.                 * COMBINATIONS *
+.                 ****************
+.                 
+.                         *Combine Married and Living in COmmon Law partners
+.                         gen cohabit = 0
+
+.                         replace cohabit = 1 if MARSTAT < 3
+(30,807 real changes made)
+
+.                         
+.                         *Combine widowed, Separated, Divorced in one category
+.                         *gen seperate = 0
+.                         *replace seperate = 1 if MARSTAT > 2 & MARSTAT < 6
+.                         
+.                         *Separate single people
+.                         gen single = 0
+
+.                         replace single = 1 if MARSTAT == 6
+(11,925 real changes made)
+
+.         
+.         
+.                 *Recode SEX variable 1 = female, 0 = male
+.                 gen female = 0
+
+.                 replace female = 1 if SEX == 2
+(22,861 real changes made)
+
+.                 
+.                 *Tenure
+.                 rename TENURE tenure
+
+.                 
+.                 *Immmigrants of less than 10 years of age
+.                 gen new_immig = 0
+
+.                 replace new_immig = 1 if IMMIG == 1
+(2,924 real changes made)
+
+.                 rename new_immig shortterm_immig 
+
+. 
+.                 *Immigrants of more than 10 years
+.                 gen old_immig = 0
+
+.                 replace old_immig = 1 if IMMIG == 2
+(4,785 real changes made)
+
+.                 rename old_immig longterm_immig
+
+.                 
+.                 *Obesrvations of people who complited their Diploma, Bachelor's degree and attained a degree beyond Bachelors
+.                 gen higheredu = 0
+
+.                 replace higheredu = 1 if EDUC > 3
+(31,742 real changes made)
+
+.                 
+.                 *Province
+.                 rename PROV province
+
+.                 
+.                 *Union Membership
+.                 rename UNION union_mem
+
+.                 
+.                 *Industry
+.                 rename NAICS_21 industry
+
+.                 
+.                 
+.                 *********************
+.                 * Interaction Terms *
+.                 *********************
+.                         gen shortterm_immig_female = shortterm_immig * female
+
+.                         
+.                         gen longterm_immig_female = longterm_immig * female
+
+. 
+.         
+.         **********************
+.         * Dependent variable *
+.         **********************
+.         
+.                 gen lhwage = log(HRLYEARN)
+(3,800 missing values generated)
+
+.         
+.                 reg lhwage female cohabit single shortterm_immig longterm_immig shortterm_immig_female longterm_immig_female highe
+> redu tenure union_mem i.province i.industry
+
+      Source |       SS           df       MS      Number of obs   =    42,691
+-------------+----------------------------------   F(39, 42651)    =    700.89
+       Model |  3119.74915        39  79.9935679   Prob > F        =    0.0000
+    Residual |  4867.78478    42,651  .114130613   R-squared       =    0.3906
+-------------+----------------------------------   Adj R-squared   =    0.3900
+       Total |  7987.53393    42,690  .187105503   Root MSE        =    .33783
+
+---------------------------------------------------------------------------------------------------------------------------
+                                                   lhwage | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+----------------------------------------------------------+----------------------------------------------------------------
+                                                   female |  -.1345571   .0040085   -33.57   0.000    -.1424138   -.1267003
+                                                  cohabit |   .0400077   .0061385     6.52   0.000     .0279762    .0520392
+                                                   single |  -.0711994   .0067541   -10.54   0.000    -.0844376   -.0579611
+                                          shortterm_immig |   -.099391   .0094897   -10.47   0.000    -.1179911   -.0807909
+                                           longterm_immig |  -.0184845   .0077776    -2.38   0.017    -.0337288   -.0032402
+                                   shortterm_immig_female |  -.0216059   .0135373    -1.60   0.110    -.0481394    .0049276
+                                    longterm_immig_female |  -.0299181   .0107211    -2.79   0.005    -.0509317   -.0089044
+                                                higheredu |   .1948624   .0037975    51.31   0.000     .1874191    .2023056
+                                                   tenure |   .0011426   .0000213    53.67   0.000     .0011009    .0011843
+                                                union_mem |  -.0279726   .0020881   -13.40   0.000    -.0320653   -.0238798
+                                                          |
+                                                 province |
+                                    Prince Edward Island  |  -.0687945   .0137927    -4.99   0.000    -.0958286   -.0417604
+                                             Nova Scotia  |  -.0288324   .0117699    -2.45   0.014    -.0519016   -.0057632
+                                           New Brunswick  |  -.0665693   .0118394    -5.62   0.000    -.0897748   -.0433639
+                                                  Quebec  |   .0465987    .009929     4.69   0.000     .0271376    .0660597
+                                                 Ontario  |   .1074595   .0096939    11.09   0.000     .0884592    .1264597
+                                                Manitoba  |   .0592441    .010839     5.47   0.000     .0379994    .0804887
+                                            Saskatchewan  |    .104576    .011019     9.49   0.000     .0829786    .1261734
+                                                 Alberta  |   .2169408   .0105276    20.61   0.000     .1963066    .2375751
+                                        British Columbia  |   .1397022   .0103246    13.53   0.000     .1194658    .1599386
+                                                          |
+                                                 industry |
+Forestry and logging and support activities for forestry  |   .1603841   .0298721     5.37   0.000     .1018342    .2189341
+                           Fishing, hunting and trapping  |   .0767798   .0657395     1.17   0.243    -.0520709    .2056305
+           Mining, quarrying, and oil and gas extraction  |    .470073   .0184821    25.43   0.000     .4338477    .5062984
+                                               Utilities  |   .4549807   .0225571    20.17   0.000     .4107683     .499193
+                                            Construction  |   .2415997   .0165338    14.61   0.000     .2091931    .2740062
+                           Manufacturing - durable goods  |   .1527883    .016824     9.08   0.000     .1198129    .1857637
+                       Manufacturing - non-durable goods  |   .1057028   .0172247     6.14   0.000      .071942    .1394636
+                                         Wholesale trade  |   .1454703   .0178469     8.15   0.000     .1104901    .1804505
+                                            Retail trade  |  -.0768428   .0162205    -4.74   0.000    -.1086353   -.0450504
+                          Transportation and warehousing  |   .1277201   .0170305     7.50   0.000       .09434    .1611003
+                                   Finance and insurance  |   .2927755   .0174724    16.76   0.000     .2585292    .3270219
+                      Real estate and rental and leasing  |   .1239765   .0214666     5.78   0.000     .0819015    .1660515
+         Professional, scientific and technical services  |   .3434492   .0169987    20.20   0.000     .3101313     .376767
+           Business, building and other support services  |  -.0049744   .0179989    -0.28   0.782    -.0402526    .0303039
+                                    Educational services  |   .3046963   .0167281    18.21   0.000     .2719088    .3374837
+                       Health care and social assistance  |   .1657437   .0162491    10.20   0.000     .1338952    .1975923
+                     Information, culture and recreation  |    .144465   .0179534     8.05   0.000      .109276    .1796541
+                         Accommodation and food services  |  -.1555506   .0170937    -9.10   0.000    -.1890546   -.1220466
+           Other services (except public administration)  |   .0582372   .0177539     3.28   0.001     .0234393    .0930352
+                                   Public administration  |   .3675247   .0168225    21.85   0.000     .3345523     .400497
+                                                          |
+                                                    _cons |   2.913312   .0199856   145.77   0.000      2.87414    2.952484
+---------------------------------------------------------------------------------------------------------------------------
+
+. 
+end of do-file
+
+. do "C:\Users\abkmu\AppData\Local\Temp\STD455c_000000.tmp"
+
+.         clear 
+
+.         use "$path/Input/november2022.dta"
+
+.         
+. 
+.         *****************
+.         * Resrtrictions *
+.         *****************
+.         
+.                 *Drop obsersavation over 65 yrs and unemployed and not in Labour force
+.                 drop if AGE_12 > 10 & (LFSSTAT == 3 | LFSSTAT == 4)
+(24,277 observations deleted)
+
+.                 
+.                 *Drop obsersavationS of people who earn less than $12 dollars an hour
+.                 drop if HRLYEARN < 12 
+(443 observations deleted)
+
+.                 
+.                 *account for observations that are not in school
+.                 gen notinschool = 0
+
+.                 replace notinschool = 1 if SCHOOLN == 1
+(69,217 real changes made)
+
+.                 
+.                 *drop observstions that are full-time or part-time students
+.                 drop if notinschool == 0
+(15,411 observations deleted)
+
+.                 drop notinschool
+
+.                 
+.                 drop if COWMAIN != 1 & COWMAIN != 2
+(18,484 observations deleted)
+
+.                 
+. 
+.         *******************************
+.         * Model Independent variables *
+.         *******************************
+.                 ****************
+.                 * COMBINATIONS *
+.                 ****************
+.                 
+.                         *Combine Married and Living in COmmon Law partners
+.                         gen cohabit = 0
+
+.                         replace cohabit = 1 if MARSTAT < 3
+(33,599 real changes made)
+
+.                         
+.                         *Combine widowed, Separated, Divorced in one category
+.                         *gen seperate = 0
+.                         *replace seperate = 1 if MARSTAT > 2 & MARSTAT < 6
+.                         
+.                         *Separate single people
+.                         gen single = 0
+
+.                         replace single = 1 if MARSTAT == 6
+(13,117 real changes made)
+
+.         
+.         
+.                 *Recode SEX variable 1 = female, 0 = male
+.                 gen female = 0
+
+.                 replace female = 1 if SEX == 2
+(24,999 real changes made)
+
+.                 
+.                 *Tenure
+.                 rename TENURE tenure
+
+.                 
+.                 *Immmigrants of less than 10 years of age
+.                 gen new_immig = 0
+
+.                 replace new_immig = 1 if IMMIG == 1
+(3,854 real changes made)
+
+.                 rename new_immig shortterm_immig 
+
+. 
+.                 *Immigrants of more than 10 years
+.                 gen old_immig = 0
+
+.                 replace old_immig = 1 if IMMIG == 2
+(7,070 real changes made)
+
+.                 rename old_immig longterm_immig
+
+.                 
+.                 *Obesrvations of people who complited their Diploma, Bachelor's degree and attained a degree beyond Bachelors
+.                 gen higheredu = 0
+
+.                 replace higheredu = 1 if EDUC > 3
+(36,449 real changes made)
+
+.                 
+.                 *Province
+.                 rename PROV province
+
+.                 
+.                 *Union Membership
+.                 rename UNION union_mem
+
+.                 
+.                 *Industry
+.                 rename NAICS_21 industry
+
+.                 
+.                 
+.                 *********************
+.                 * Interaction Terms *
+.                 *********************
+.                         gen shortterm_immig_female = shortterm_immig * female
+
+.                         
+.                         gen longterm_immig_female = longterm_immig * female
+
+. 
+.         
+.         **********************
+.         * Dependent variable *
+.         **********************
+.         
+.                 gen lhwage = log(HRLYEARN)
+(3,165 missing values generated)
+
+.         
+.                 reg lhwage female cohabit single shortterm_immig longterm_immig shortterm_immig_female longterm_immig_female highe
+> redu tenure union_mem i.province i.industry
+
+      Source |       SS           df       MS      Number of obs   =    47,568
+-------------+----------------------------------   F(39, 47528)    =    653.20
+       Model |  3115.90913        39  79.8951058   Prob > F        =    0.0000
+    Residual |  5813.28889    47,528  .122312929   R-squared       =    0.3490
+-------------+----------------------------------   Adj R-squared   =    0.3484
+       Total |  8929.19802    47,567  .187718334   Root MSE        =    .34973
+
+---------------------------------------------------------------------------------------------------------------------------
+                                                   lhwage | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+----------------------------------------------------------+----------------------------------------------------------------
+                                                   female |  -.1208944   .0039849   -30.34   0.000    -.1287049    -.113084
+                                                  cohabit |   .0546068   .0060713     8.99   0.000     .0427069    .0665067
+                                                   single |  -.0608814   .0066646    -9.14   0.000     -.073944   -.0478188
+                                          shortterm_immig |   -.041702   .0085388    -4.88   0.000    -.0584382   -.0249658
+                                           longterm_immig |  -.0164423   .0067112    -2.45   0.014    -.0295963   -.0032883
+                                   shortterm_immig_female |  -.0495731   .0121917    -4.07   0.000    -.0734689   -.0256773
+                                    longterm_immig_female |  -.0447499   .0092949    -4.81   0.000    -.0629682   -.0265317
+                                                higheredu |   .1917974   .0038653    49.62   0.000     .1842213    .1993735
+                                                   tenure |   .0010812   .0000206    52.55   0.000     .0010409    .0011215
+                                                union_mem |  -.0090983    .002085    -4.36   0.000     -.013185   -.0050117
+                                                          |
+                                                 province |
+                                    Prince Edward Island  |  -.0460838   .0144404    -3.19   0.001    -.0743872   -.0177804
+                                             Nova Scotia  |  -.0726384   .0110006    -6.60   0.000    -.0941998    -.051077
+                                           New Brunswick  |  -.0463896    .010772    -4.31   0.000     -.067503   -.0252763
+                                                  Quebec  |   .0589785    .008871     6.65   0.000     .0415912    .0763657
+                                                 Ontario  |   .1062168   .0085423    12.43   0.000     .0894739    .1229598
+                                                Manitoba  |   -.007558   .0099968    -0.76   0.450    -.0271517    .0120358
+                                            Saskatchewan  |   .0557002   .0103741     5.37   0.000     .0353668    .0760336
+                                                 Alberta  |   .1256922   .0099139    12.68   0.000     .1062609    .1451236
+                                        British Columbia  |   .1346936    .009288    14.50   0.000      .116489    .1528981
+                                                          |
+                                                 industry |
+Forestry and logging and support activities for forestry  |   .2352484   .0369755     6.36   0.000     .1627759    .3077209
+                           Fishing, hunting and trapping  |  -.0518335   .0722865    -0.72   0.473     -.193516     .089849
+           Mining, quarrying, and oil and gas extraction  |   .5255683   .0209507    25.09   0.000     .4845046     .566632
+                                               Utilities  |   .5344941   .0235736    22.67   0.000     .4882896    .5806986
+                                            Construction  |   .3120425   .0187924    16.60   0.000     .2752091    .3488759
+                           Manufacturing - durable goods  |   .2278888    .019033    11.97   0.000     .1905838    .2651938
+                       Manufacturing - non-durable goods  |   .1833243    .019311     9.49   0.000     .1454745    .2211742
+                                         Wholesale trade  |   .2281391   .0198227    11.51   0.000     .1892863    .2669918
+                                            Retail trade  |   .0111875    .018548     0.60   0.546    -.0251668    .0475417
+                          Transportation and warehousing  |   .2086923   .0192918    10.82   0.000       .17088    .2465045
+                                   Finance and insurance  |   .4075577   .0192317    21.19   0.000     .3698633    .4452522
+                      Real estate and rental and leasing  |   .2165543   .0232793     9.30   0.000     .1709265    .2621821
+         Professional, scientific and technical services  |   .4703252   .0188791    24.91   0.000     .4333219    .5073285
+           Business, building and other support services  |   .0769421   .0202036     3.81   0.000     .0373428    .1165414
+                                    Educational services  |   .3638578   .0189079    19.24   0.000      .326798    .4009176
+                       Health care and social assistance  |   .2541679   .0185331    13.71   0.000     .2178428    .2904931
+                     Information, culture and recreation  |   .2413526   .0199808    12.08   0.000       .20219    .2805152
+                         Accommodation and food services  |  -.0888706   .0195465    -4.55   0.000     -.127182   -.0505592
+           Other services (except public administration)  |   .1433726    .019883     7.21   0.000     .1044017    .1823434
+                                   Public administration  |   .4612783    .018957    24.33   0.000     .4241223    .4984343
+                                                          |
+                                                    _cons |   2.902066   .0214944   135.01   0.000     2.859936    2.944195
+---------------------------------------------------------------------------------------------------------------------------
+
+. 
+.         
+.         
+. 
+end of do-file
+
+. do "C:\Users\abkmu\AppData\Local\Temp\STD455c_000000.tmp"
+
+.         clear 
+
+.         use "$path/Input/november2022.dta"
+
+.         
+. 
+.         *****************
+.         * Resrtrictions *
+.         *****************
+.         
+.                 *Drop obsersavation over 65 yrs and unemployed and not in Labour force
+.                 drop if AGE_12 > 10 & (LFSSTAT == 3 | LFSSTAT == 4)
+(24,277 observations deleted)
+
+.                 
+.                 *Drop obsersavationS of people who earn less than $12 dollars an hour
+.                 drop if HRLYEARN < 12 
+(443 observations deleted)
+
+.                 
+.                 *account for observations that are not in school
+.                 gen notinschool = 0
+
+.                 replace notinschool = 1 if SCHOOLN == 1
+(69,217 real changes made)
+
+.                 
+.                 *drop observstions that are full-time or part-time students
+.                 drop if notinschool == 0
+(15,411 observations deleted)
+
+.                 drop notinschool
+
+.                 
+.                 drop if COWMAIN != 1 & COWMAIN != 2
+(18,484 observations deleted)
+
+.                 
+. 
+.         *******************************
+.         * Model Independent variables *
+.         *******************************
+.                 ****************
+.                 * COMBINATIONS *
+.                 ****************
+.                 
+.                         *Combine Married and Living in COmmon Law partners
+.                         gen cohabit = 0
+
+.                         replace cohabit = 1 if MARSTAT < 3
+(33,599 real changes made)
+
+.                         
+.                         *Combine widowed, Separated, Divorced in one category
+.                         *gen seperate = 0
+.                         *replace seperate = 1 if MARSTAT > 2 & MARSTAT < 6
+.                         
+.                         *Separate single people
+.                         gen single = 0
+
+.                         replace single = 1 if MARSTAT == 6
+(13,117 real changes made)
+
+.         
+.         
+.                 *Recode SEX variable 1 = female, 0 = male
+.                 gen female = 0
+
+.                 replace female = 1 if SEX == 2
+(24,999 real changes made)
+
+.                 
+.                 *Tenure
+.                 rename TENURE tenure
+
+.                 
+.                 *Immmigrants of less than 10 years of age
+.                 gen new_immig = 0
+
+.                 replace new_immig = 1 if IMMIG == 1
+(3,854 real changes made)
+
+.                 rename new_immig shortterm_immig 
+
+. 
+.                 *Immigrants of more than 10 years
+.                 gen old_immig = 0
+
+.                 replace old_immig = 1 if IMMIG == 2
+(7,070 real changes made)
+
+.                 rename old_immig longterm_immig
+
+.                 
+.                 *Obesrvations of people who complited their Diploma, Bachelor's degree and attained a degree beyond Bachelors
+.                 gen higheredu = 0
+
+.                 replace higheredu = 1 if EDUC > 3
+(36,449 real changes made)
+
+.                 
+.                 *Province
+.                 rename PROV province
+
+.                 
+.                 *Union Membership
+.                 rename UNION union_mem
+
+.                 
+.                 *Industry
+.                 rename NAICS_21 industry
+
+.                 
+.                 
+.                 *********************
+.                 * Interaction Terms *
+.                 *********************
+.                         gen shortterm_immig_female = shortterm_immig * female
+
+.                         
+.                         gen longterm_immig_female = longterm_immig * female
+
+. 
+.         
+.         **********************
+.         * Dependent variable *
+.         **********************
+.         
+.                 gen lhwage = log(HRLYEARN)
+(3,165 missing values generated)
+
+.         
+.                 reg lhwage female cohabit single shortterm_immig longterm_immig shortterm_immig_female longterm_immig_female highe
+> redu tenure union_mem i.province i.industry
+
+      Source |       SS           df       MS      Number of obs   =    47,568
+-------------+----------------------------------   F(39, 47528)    =    653.20
+       Model |  3115.90913        39  79.8951058   Prob > F        =    0.0000
+    Residual |  5813.28889    47,528  .122312929   R-squared       =    0.3490
+-------------+----------------------------------   Adj R-squared   =    0.3484
+       Total |  8929.19802    47,567  .187718334   Root MSE        =    .34973
+
+---------------------------------------------------------------------------------------------------------------------------
+                                                   lhwage | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+----------------------------------------------------------+----------------------------------------------------------------
+                                                   female |  -.1208944   .0039849   -30.34   0.000    -.1287049    -.113084
+                                                  cohabit |   .0546068   .0060713     8.99   0.000     .0427069    .0665067
+                                                   single |  -.0608814   .0066646    -9.14   0.000     -.073944   -.0478188
+                                          shortterm_immig |   -.041702   .0085388    -4.88   0.000    -.0584382   -.0249658
+                                           longterm_immig |  -.0164423   .0067112    -2.45   0.014    -.0295963   -.0032883
+                                   shortterm_immig_female |  -.0495731   .0121917    -4.07   0.000    -.0734689   -.0256773
+                                    longterm_immig_female |  -.0447499   .0092949    -4.81   0.000    -.0629682   -.0265317
+                                                higheredu |   .1917974   .0038653    49.62   0.000     .1842213    .1993735
+                                                   tenure |   .0010812   .0000206    52.55   0.000     .0010409    .0011215
+                                                union_mem |  -.0090983    .002085    -4.36   0.000     -.013185   -.0050117
+                                                          |
+                                                 province |
+                                    Prince Edward Island  |  -.0460838   .0144404    -3.19   0.001    -.0743872   -.0177804
+                                             Nova Scotia  |  -.0726384   .0110006    -6.60   0.000    -.0941998    -.051077
+                                           New Brunswick  |  -.0463896    .010772    -4.31   0.000     -.067503   -.0252763
+                                                  Quebec  |   .0589785    .008871     6.65   0.000     .0415912    .0763657
+                                                 Ontario  |   .1062168   .0085423    12.43   0.000     .0894739    .1229598
+                                                Manitoba  |   -.007558   .0099968    -0.76   0.450    -.0271517    .0120358
+                                            Saskatchewan  |   .0557002   .0103741     5.37   0.000     .0353668    .0760336
+                                                 Alberta  |   .1256922   .0099139    12.68   0.000     .1062609    .1451236
+                                        British Columbia  |   .1346936    .009288    14.50   0.000      .116489    .1528981
+                                                          |
+                                                 industry |
+Forestry and logging and support activities for forestry  |   .2352484   .0369755     6.36   0.000     .1627759    .3077209
+                           Fishing, hunting and trapping  |  -.0518335   .0722865    -0.72   0.473     -.193516     .089849
+           Mining, quarrying, and oil and gas extraction  |   .5255683   .0209507    25.09   0.000     .4845046     .566632
+                                               Utilities  |   .5344941   .0235736    22.67   0.000     .4882896    .5806986
+                                            Construction  |   .3120425   .0187924    16.60   0.000     .2752091    .3488759
+                           Manufacturing - durable goods  |   .2278888    .019033    11.97   0.000     .1905838    .2651938
+                       Manufacturing - non-durable goods  |   .1833243    .019311     9.49   0.000     .1454745    .2211742
+                                         Wholesale trade  |   .2281391   .0198227    11.51   0.000     .1892863    .2669918
+                                            Retail trade  |   .0111875    .018548     0.60   0.546    -.0251668    .0475417
+                          Transportation and warehousing  |   .2086923   .0192918    10.82   0.000       .17088    .2465045
+                                   Finance and insurance  |   .4075577   .0192317    21.19   0.000     .3698633    .4452522
+                      Real estate and rental and leasing  |   .2165543   .0232793     9.30   0.000     .1709265    .2621821
+         Professional, scientific and technical services  |   .4703252   .0188791    24.91   0.000     .4333219    .5073285
+           Business, building and other support services  |   .0769421   .0202036     3.81   0.000     .0373428    .1165414
+                                    Educational services  |   .3638578   .0189079    19.24   0.000      .326798    .4009176
+                       Health care and social assistance  |   .2541679   .0185331    13.71   0.000     .2178428    .2904931
+                     Information, culture and recreation  |   .2413526   .0199808    12.08   0.000       .20219    .2805152
+                         Accommodation and food services  |  -.0888706   .0195465    -4.55   0.000     -.127182   -.0505592
+           Other services (except public administration)  |   .1433726    .019883     7.21   0.000     .1044017    .1823434
+                                   Public administration  |   .4612783    .018957    24.33   0.000     .4241223    .4984343
+                                                          |
+                                                    _cons |   2.902066   .0214944   135.01   0.000     2.859936    2.944195
+---------------------------------------------------------------------------------------------------------------------------
+
+. 
+.         
+.         
+. 
+end of do-file
+
