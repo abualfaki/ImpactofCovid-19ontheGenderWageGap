@@ -1,5 +1,7 @@
 # Exploring the Impact of COVID-19 on the Gender Wage Gap: A Comparative Analysis of Canadians and Immigrants
 
+![image](https://github.com/user-attachments/assets/55aefbb2-0f60-481e-8547-ff418dab53b9)
+
 ## 📌 Overview
 This project investigates how the COVID-19 pandemic affected the gender wage gap among Canadian-born citizens and immigrants. Using Labour Force Survey data from November 2019 to November 2022, we quantify changes in wage disparities across different demographic groups, particularly short-term and long-term immigrants.
 
