@@ -1,4 +1,4 @@
-# Exploring the Impact of COVID-19 on the Gender Wage Gap: A Comparative Analysis of Canadians and Immigrants
+# The Impact of COVID-19 on the Gender Wage Gap: A Comparative Analysis Between Canadian Citizens and Immigrants
 
 ![image](https://github.com/user-attachments/assets/55aefbb2-0f60-481e-8547-ff418dab53b9)
 
